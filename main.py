@@ -1,7 +1,9 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import relationship, backref
 from datetime import date
+from UserNotFound import UserNotFoundException
 
 app=Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI']=f"postgresql://{'postgres'}:{'Shiva09'}@{'localhost'}:{'5432'}/{'ecommerce'}"
@@ -61,33 +63,38 @@ def insert_account():
     acc_no=data["acc_no"]
     balance = data["balance"]
     cust_id=data["cust_id"]
-
-    acc=Account(acc_no,balance,cust_id)
-    db.session.add(acc)
-    db.session.commit()
-    Account.query.all()
-    return jsonify(acc.as_dict())
+    try:
+        acc=Account(acc_no,balance,cust_id)
+        db.session.add(acc)
+        db.session.commit()
+        Account.query.all()
+        return jsonify(acc.as_dict())
+    except IntegrityError as e:
+        # Handling the integrity error
+        return jsonify({"Exception":f"{e}"})
 
 @app.route("/api/UpdateBankCustomer",methods=['POST'])
 def update_customer():
     data = request.get_json()
     cust = BankCustomer.query.get(data['id'])
+    try:
+        if cust is not None:
+            if 'name' in data.keys():
+                cust.name = data['name']
+            if 'address' in data.keys():
+                cust.address = data['address']
+            if 'mob' in data.keys():
+                cust.mob = data['mob']
+            if 'gender' in data.keys():
+                cust.gender = data['gender']
 
-    if cust is not None:
-        if 'name' in data.keys():
-            cust.name = data['name']
-        if 'address' in data.keys():
-            cust.address = data['address']
-        if 'mob' in data.keys():
-            cust.mob = data['mob']
-        if 'gender' in data.keys():
-            cust.gender = data['gender']
-
-        db.session.add(cust)
-        db.session.commit()
-        return jsonify(cust.as_dict())
-    else:
-        return jsonify({"msg": f"{data['id']} not found"})
+            db.session.add(cust)
+            db.session.commit()
+            return jsonify(cust.as_dict())
+        else:
+            raise UserNotFoundException("User not found")
+    except UserNotFoundException as unf:
+        return jsonify({"msg":f"{unf.msg}"}),404
 
 @app.route("/api/DeleteCustomer",methods=['POST'])
 def delete_customer():
