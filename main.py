@@ -1,14 +1,27 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify,send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import relationship, backref
 from datetime import date
 from UserNotFound import UserNotFoundException
+from flask_swagger_ui import get_swaggerui_blueprint
+#from routes import request_api
 
 app=Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI']=f"postgresql://{'postgres'}:{'Shiva09'}@{'localhost'}:{'5432'}/{'ecommerce'}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS']=False
 db=SQLAlchemy(app)
+
+app.route('/static/<path:path>')
+def send_static(path):
+    return send_from_directory('static',path)
+
+SWAGGER_URL='/swagger'
+API_URL='/static/swagger.json'
+swaggerui_blueprint=get_swaggerui_blueprint(SWAGGER_URL,API_URL,config={"app_name":"Bank Project"})
+app.register_blueprint(swaggerui_blueprint,url_prefix=SWAGGER_URL)
+#app.register_blueprint(request_api.get_blueprint())
+
 
 #parent class
 class BankCustomer(db.Model):
@@ -71,12 +84,12 @@ def insert_account():
         return jsonify(acc.as_dict())
     except IntegrityError as e:
         # Handling the integrity error
-        return jsonify({"Exception":f"{e}"})
+        return jsonify({"Exception":f"{e}"}),401
 
 @app.route("/api/UpdateBankCustomer",methods=['POST'])
 def update_customer():
     data = request.get_json()
-    cust = BankCustomer.query.get(data['id'])
+    cust = BankCustomer.query.get(data['cust_id'])
     try:
         if cust is not None:
             if 'name' in data.keys():
@@ -109,6 +122,19 @@ def delete_customer():
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": f"Error while deleting user with ID {cust.id}: {str(e)}"}), 500
+
+@app.route("/api/DeleteAccount/<acc_no>",methods=['DELETE'])
+def delete_account(acc_no):
+    cust = Account.query.get(acc_no)
+    if not cust:
+        return jsonify({"message": f"User with ID {acc_no} not found"}), 404
+    try:
+        db.session.delete(cust)
+        db.session.commit()
+        return jsonify({"message": f"User with ID {acc_no} has been deleted successfully"})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": f"Error while deleting account with ID {cust.acc_no}: {str(e)}"}), 500
 
 
 

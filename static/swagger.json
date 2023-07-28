@@ -1,0 +1,208 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Bank Project APIs",
+    "description": "Basic CRUD Operations on Bnak Project",
+    "version": "1.0.11"
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:5000"
+    }
+  ],
+  "tags": [
+    {
+      "name": "BankCustomer",
+      "description": "Bank Customer CRUD Operations"
+    },
+    {
+      "name": "Account",
+      "description": "Account Operations"
+    }
+  ],
+  "paths": {
+    "/api/InsertBankCustomer": {
+      "post": {
+        "tags": [
+          "BankCustomer"
+        ],
+        "summary": "Add Bank Customer",
+        "description": "Adding Bank Customer to database",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "name": "Karan Kapoor",
+                  "address": "Pune",
+                  "mob": "7867908876",
+                  "gender": "male"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          }
+        }
+      }
+    },
+    "/api/UpdateBankCustomer": {
+      "post": {
+        "tags": [
+          "BankCustomer"
+        ],
+        "summary": "Update Bank Customer",
+        "description": "Updating Bank Customer",
+        "operationId": "updateCustomer",
+        "requestBody": {
+          "description": "Update an existing customer in the bank",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "cust_id"
+                ],
+                "properties": {
+                  "cust_id": {
+                    "type": "integer",
+                    "example": 3
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "Karan Kapoor"
+                  },
+                  "address": {
+                    "type": "string",
+                    "example": "Pune"
+                  },
+                  "mob": {
+                    "type": "string",
+                    "example": 9234567890
+                  },
+                  "gender": {
+                    "type": "string",
+                    "example": "male"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "404": {
+            "description": "User not found to update"
+          }
+        }
+      }
+    },
+    "/api/DeleteCustomer": {
+      "post": {
+        "tags": [
+          "BankCustomer"
+        ],
+        "summary": "Delete Bank Customer",
+        "description": "Deleting Bank Customer",
+        "operationId": "deleteCustomer",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "id": 6
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "404": {
+            "description": "User not found to delete"
+          },
+          "500": {
+            "description": "Error while deleting user"
+          }
+        }
+      }
+    },
+    "/api/InsertAccount": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Add Accounts",
+        "description": "Addding Accounts with respect to customers",
+        "operationId": "addAccount",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "acc_no": 6456759,
+                  "balance": 4567906,
+                  "cust_id": 6
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "401": {
+            "description": "Integrity Error(Account already exists/Foreign key constraint)"
+          }
+        }
+      }
+    },
+    "/api/DeleteAccount/{acc_no}": {
+      "delete": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Delete record",
+        "description": "Delete record by account number",
+        "parameters": [
+          {
+            "name": "acc_no",
+            "in": "path",
+            "description": "ID of user to delete",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "404": {
+            "description": "Account not found to delete"
+          },
+          "505": {
+            "description": "Error while deleting account number"
+          }
+        }
+      }
+    }
+  }
+}
